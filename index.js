@@ -32,7 +32,9 @@ function getNextGame(day){
 
 function updateNextGame(game){
     let date = new Date(game.gameDate);
-    //console.log(game);
+    let curdate = new Date();
+    let timeToGame = (date.getTime() - curdate.getTime());
+    console.log(timeToGame);
     switch(game.status.codedGameState) {
     //If Game In Progress
         case 'I':
