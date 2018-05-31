@@ -1,0 +1,17 @@
+{
+  "name": "mlb-google-home-alerter",
+  "version": "1.0.0",
+  "description": "Sends notifications to google home based on mlb scores",
+  "main": "index.js",
+  "dependencies": {
+    "google-home-notifier": "^1.2.0",
+    "node-schedule": "^1.3.0",
+    "node-mlb-api": "^0.0.2-6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "test.js"
+  },
+  "author": "Matt Bonsall",
+  "license": "ISC"
+}
