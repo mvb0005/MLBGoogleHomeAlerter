@@ -17,6 +17,8 @@ function getNextGame(day){
         let games = await mlb.getGames(dayToString(day));
         for(let game in games.dates[0].games){
             let teams = games.dates[0].games[game].teams;
+            console.log(games.dates[0].games[game]);
+            if (games.dates[0].games[game].status.codedGameState != 'F'){
             if (teams.home.team.id == TEAM_ID) {
                 clearInterval(delay);
                 console.log("Home Game: " + new Date(games.dates[0].games[game].gameDate));
@@ -27,6 +29,7 @@ function getNextGame(day){
                 console.log("Away Game: " + new Date(games.dates[0].games[game].gameDate));
                 updateNextGame(games.dates[0].games[game]);
             }
+        }
         }
         day.setDate(day.getDate() + 1);
     };
@@ -126,7 +129,14 @@ function startUpdateScore(game){
             let delta = ascore - hscore;
             if (broadcasted != 0) {
                 if (broadcasted * delta <= 0){
+                    if (delta == 0){
+                        console.log("The game is all tied.");
+                        broadcasted = 0;
+                    } else {
 
+                    }
+                    let message = teams[((delta < 0) ? 0 : 1)] + " has taken a " + Math.abs(delta) + " run lead over the " + teams[((delta > 0) ? 0 : 1)];
+                    console.log(message);
                 }
             } else {
                 if (Math.abs(delta) >= 1){
