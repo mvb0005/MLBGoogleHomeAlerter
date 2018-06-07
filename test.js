@@ -2,7 +2,6 @@
 var language = 'us';
 const ROCKIES_ID = 115;
 var mlb = require('node-mlb-api');
-var test = require('./index');
 
 
 //googlehome.ip('10.0.0.173', language);
