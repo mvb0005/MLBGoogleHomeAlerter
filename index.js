@@ -7,39 +7,39 @@ const GAME_WARNING = 30;
 const SHOW_AWAY_GAMES = true;
 const UPDATE_INTERVAL = 5 * 60 * 1000; //in ms
 
-function dayToString(day){
-	return day.getMonth() + 1 + "/" + day.getDate() + "/" + day.getFullYear();
+function dayToString(day) {
+    return day.getMonth() + 1 + "/" + day.getDate() + "/" + day.getFullYear();
 }
 
-function getNextGame(day){
+function getNextGame(day) {
     let delay = setInterval(getGame, API_DELAY);
-    async function getGame(){
+    async function getGame() {
         let games = await mlb.getGames(dayToString(day));
-        for(let game in games.dates[0].games){
+        for (let game in games.dates[0].games) {
             let teams = games.dates[0].games[game].teams;
             console.log(games.dates[0].games[game]);
-            if (games.dates[0].games[game].status.codedGameState != 'F'){
-            if (teams.home.team.id == TEAM_ID) {
-                clearInterval(delay);
-                console.log("Home Game: " + new Date(games.dates[0].games[game].gameDate));
-                updateNextGame(games.dates[0].games[game]);
+            if (games.dates[0].games[game].status.codedGameState != 'F') {
+                if (teams.home.team.id == TEAM_ID) {
+                    clearInterval(delay);
+                    console.log("Home Game: " + new Date(games.dates[0].games[game].gameDate));
+                    updateNextGame(games.dates[0].games[game]);
+                }
+                if (SHOW_AWAY_GAMES && teams.away.team.id == TEAM_ID) {
+                    clearInterval(delay);
+                    console.log("Away Game: " + new Date(games.dates[0].games[game].gameDate));
+                    updateNextGame(games.dates[0].games[game]);
+                }
             }
-            if (SHOW_AWAY_GAMES && teams.away.team.id == TEAM_ID) {
-                clearInterval(delay);
-                console.log("Away Game: " + new Date(games.dates[0].games[game].gameDate));
-                updateNextGame(games.dates[0].games[game]);
-            }
-        }
         }
         day.setDate(day.getDate() + 1);
     };
 };
 
-function updateNextGame(game){
+function updateNextGame(game) {
     let date = new Date(game.gameDate);
     let curdate = new Date();
     let timeToGame = (date.getTime() - curdate.getTime()) / 60000;
-    switch(game.status.codedGameState) {
+    switch (game.status.codedGameState) {
         //If Game In Progress
         case 'I':
             console.log("Game in Progress!");
@@ -60,20 +60,20 @@ function updateNextGame(game){
             console.log("Game Scheduled");
             gameStartEvent(game);
             //If game is < x mins away
-            if (timeToGame < 30){
+            if (timeToGame < 30) {
                 //remind NOW!
                 remiderEvent(game);
             } else {
                 //schedule game reminder
                 date.setMinutes(date.getMinutes() - 30);
-                console.log('Scheduled Reminder for '+ date);
+                console.log('Scheduled Reminder for ' + date);
                 schedule.scheduleJob(date, remiderEvent.bind(null, game));
             }
             break;
     }
 }
 
-function remiderEvent(game){
+function remiderEvent(game) {
     let date = new Date(game.gameDate);
     let curdate = new Date();
     let timeToGame = (date.getTime() - curdate.getTime()) / 60000;
@@ -85,10 +85,10 @@ function remiderEvent(game){
     //schedule.scheduleJob(date, gameStartEvent.bind(null, game));
 }
 
-function gameStartEvent(game){
+function gameStartEvent(game) {
     let curdate = new Date();
     mlb.getGameFeed(game.gamePk).then((result) => {
-        if (result.gameData.status.codedGameState == 'S'){
+        if (result.gameData.status.codedGameState == 'S') {
             console.log("Game Not Started Yet");
             schedule.scheduleJob(curdate.setMinutes(curdate.getMinutes() + 5), gameStartEvent.bind(null, game));
         } else if (result.gameData.status.codedGameState == 'I') {
@@ -100,22 +100,22 @@ function gameStartEvent(game){
     })
 }
 
-function gameOverEvent(game){
+function gameOverEvent(game) {
     console.log("Game Over");
     let date = new Date(game.gameDate);
     date.setDate(date.getDate() + 1);
     getNextGame(date);
 }
 
-function startUpdateScore(game){
-    
+function startUpdateScore(game) {
+
     let interval = setInterval(updateScore, 5000);
     let gamePk = game.gamePk;
     scoreHome = scoreAway = 0;
     broadcasted = 0;
-    function updateScore(){
+    function updateScore() {
         mlb.getGameFeed(gamePk).then((result) => {
-            if(result.gameData.status.codedGameState != 'I'){
+            if (result.gameData.status.codedGameState != 'I') {
                 //stop calling updateScore
                 clearInterval(interval);
                 //notify game over
@@ -128,8 +128,8 @@ function startUpdateScore(game){
             let hscore = result.liveData.linescore.teams.home.runs;
             let delta = ascore - hscore;
             if (broadcasted != 0) {
-                if (broadcasted * delta <= 0){
-                    if (delta == 0){
+                if (broadcasted * delta <= 0) {
+                    if (delta == 0) {
                         console.log("The game is all tied.");
                         broadcasted = 0;
                     } else {
@@ -139,7 +139,7 @@ function startUpdateScore(game){
                     console.log(message);
                 }
             } else {
-                if (Math.abs(delta) >= 1){
+                if (Math.abs(delta) >= 1) {
                     broadcasted = delta;
                     let message = teams[((delta < 0) ? 0 : 1)] + " has taken a " + Math.abs(delta) + " run lead over the " + teams[((delta > 0) ? 0 : 1)];
                     console.log(message);
@@ -149,16 +149,16 @@ function startUpdateScore(game){
     }
     //get gamescore
     //if game is over
-        //stop calling updateScore
-        //notify game over
-        //game over event
+    //stop calling updateScore
+    //notify game over
+    //game over event
     //if either team is smashing
-        //notify X team is winning by Y runs
+    //notify X team is winning by Y runs
 }
 
 function onStart() {
     //Notify Of Startup (Optional)
-    
+
     //Get Next Game
     let day = new Date();
     //day.setDate(day.getDate()-1);
